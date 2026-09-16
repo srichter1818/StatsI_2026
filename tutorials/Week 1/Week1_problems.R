@@ -17,11 +17,24 @@ detachAllPackages()
 y <- c(0, 4, 4, 5, 7, 10)
 
 # (1) find sum of y using the built-in R function
+sumy <- sum(y)
+sumy
 
 # (2) find mean of y using your "own" function
+sum(y)/length(y)
+
 # now do the same thing, but faster using the built-in R function
+mean(y)
 
 # (3) find sum of demeaned values
+deviations <- y - mean(y)
+square_dev <- deviations^2
+square_dev
+n <- length(y)
+sum(square_dev) / (n-1)
+
+#or
+sd(y)
 
 # (4) calculate sum of squared error
 
