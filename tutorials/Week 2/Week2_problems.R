@@ -52,10 +52,10 @@ summary(df)
 # Income
 mean_income <- mean(df$income)
 median_income <- median(df$income)
-var_income <- var(df$income)
-sd_income <- sd(df$income)
+var_income <- var(df$income) #variance
+sd_income <- sd(df$income) 
 
-
+var_income
 # Education
 mean_edu <- mean(df$edu)
 median_edu <- median(df$edu)
