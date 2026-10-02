@@ -32,7 +32,6 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 # (5.) Significance test for a difference in means
 # (6.) Extra activity: real-world data (Polity scores)
 
-
 ### Research Question -----------
 # Is there a relationship between education and income?
 
@@ -43,9 +42,9 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 df <- read_csv("../../datasets/fictional_data.csv")
 
 # Quick overview
-head(df)     
-str(df)      
-summary(df)  
+head(df)
+str(df)
+summary(df)
 
 # Variables:
 # - income: Monthly net income (numeric)
@@ -55,6 +54,7 @@ summary(df)
 # How many observations do we have?
 # HINT: nrow(), or length() of one column.
 # This matters later: a small sample is one reason to use the t distribution.
+nrow(df)  # ANSWER: 19 -> a small sample
 
 
 # -------------------------------#
@@ -63,25 +63,37 @@ summary(df)
 
 # Recap of the four quantities we need:
 
-# EXERCISE: Find the mean,standard deviation and standard error
+# EXERCISE: Find the mean, standard deviation and standard error
 # of income. Store each one in an object so we can reuse them later.
-mean_income <- 
-sd_income   <- 
-se_income   <- 
+mean_income <- mean(df$income)
+sd_income   <- sd(df$income)
+se_income   <- sd(df$income) / sqrt(length(df$income))
 
 mean_income; sd_income; se_income
+# ANSWER (approx.): mean = 1860, variance = 464588.9, sd = 681.6, se = 156.4
 
 
 # -------------------------------#
 # 3. Visualizing the Distribution
 # -------------------------------#
 
-# EXERCISE: Create a histogram of income, with a title and x-axis label.
+# Two common ways to look at the shape of a numeric variable:
+#   hist(x)          -> bars counting observations in bins
+#                       (optional argument: breaks = number of bins)
+#   plot(density(x)) -> a smoothed version of the histogram
+# Add main = "..." for a title and xlab = "..." for the x-axis label.
 
+# EXERCISE: Create a histogram of income, with a title and x-axis label.
+hist(df$income,
+     breaks = 20,
+     main = "Monthly net income",
+     xlab = "Euro")
 
 # EXERCISE: Create a density plot of income, with a title and x-axis label.
 # HINT: density() computes the curve, plot() draws it.
-
+plot(density(df$income),
+     main = "Monthly net income",
+     xlab = "Euro")
 
 
 # -----------------------------------------#
@@ -90,8 +102,13 @@ mean_income; sd_income; se_income
 # Which kind of inferences can we make with regards to the population,
 # based on the sample data, specifically the sample mean and SE?
 
+# ANSWER: The sample mean is our estimate of the population mean, and the
+# standard error estimates the SD of the sampling distribution, i.e. how far
+# off that estimate is likely to be.
 
 # Why do we need the standard error?
+# ANSWER: To calculate measures of uncertainty for our point estimate
+# (e.g., confidence intervals and p-values).
 
 
 # -------------------------------#
@@ -117,24 +134,32 @@ mean_income; sd_income; se_income
 qnorm(0.025) # value with the first 2.5% of the distribution below it
 qnorm(0.975) # value with 97.5% below it (i.e. the last 2.5% above it)
 
+
 # We can also shift and scale the distribution with mean and sd.
 # Here the distribution has mean 2 and sd 0.4:
 qnorm(0.025, mean=2, sd=0.4)
 # Now the same quantile is expressed in the units of that distribution.
-qnorm(0.975, mean=2, sd=0.4)
 
 # If we plug in mean = our sample mean and sd = our SE, the result is directly
 # the lower end of the CI (no need to multiply by hand).
 
-
 # EXERCISE: Calculate the 95% CI for mean income using qnorm().
-lower_95_n <- 
-upper_95_n <- 
+
+lower_95_n <- qnorm(0.025,
+                    mean = mean_income,
+                    sd   = se_income)
+
+upper_95_n <- qnorm(0.975,
+                    mean = mean_income,
+                    sd   = se_income)
 
 lower_95_n; mean_income; upper_95_n
 
 # Check yourself: does the same result come from
 # mean_income -/+ 1.96 * se_income ?
+mean_income - 1.96 * se_income
+mean_income + 1.96 * se_income
+# ANSWER: yes (up to rounding of 1.96).
 
 
 # ---- Finding critical values with qt() (t distribution) ----
@@ -159,12 +184,20 @@ qt(0.005, df=length(df$income)-1, lower.tail=FALSE) # same as the previous line
 
 # Compare with the normal distribution: qnorm(0.995). Which is larger?
 # What does this mean for the width of the CI?
+qnorm(0.995)
+# ANSWER: the t critical value (about 2.88 with 18 df) is larger than the
+# normal one (about 2.58), so the t-based CI is wider. This is the price of
+# estimating the SD from a small sample.
 
 t_score <- qt(0.995, df = length(df$income) - 1)
 
 # EXERCISE: Re-calculate the 99% CI around mean_income using t_score.
-lower_99_t <- 
-upper_99_t <- 
+lower_99_t <- mean_income - t_score * se_income
+upper_99_t <- mean_income + t_score * se_income
+
+# The same but with the full formula
+lower_99_t <- mean_income - t_score * (sd(df$income)/sqrt(length(df$income)))
+upper_99_t <- mean_income + t_score * (sd(df$income)/sqrt(length(df$income)))
 
 lower_99_t; mean_income; upper_99_t
 
@@ -194,18 +227,20 @@ lower_99_t; mean_income; upper_99_t
 # different from the population mean in Ireland (from Google: 3034)?
 
 # Hypotheses: Should our test be one or two-sided?
-# Write H0 and HA here
-# H0: 
-# HA: 
- 
+# Write H0 and HA here:
+# ANSWER: two-sided (we ask "different", not "higher" or "lower")
+# H0: Average monthly income is 3034          (mu = 3034)
+# HA: Average monthly income is not 3034      (mu != 3034)
+
 # EXERCISE: Conduct the appropriate test (using the built-in R function).
+t.test(df$income, mu = 3034)
 
-
-# What is our conclusion?
-
+# What is our conclusion? 
+# ANSWER: t = -7.51, df = 18, p < 0.001 -> reject H0. The average income in
+# our sample is significantly different from 3034 (it is lower).
 
 # EXERCISE: Now test a one-sided hypothesis: is the mean LESS than 3034?
-
+t.test(df$income, mu = 3034, alternative = "less")
 
 
 
@@ -215,6 +250,7 @@ lower_99_t; mean_income; upper_99_t
 # By default, t.test() uses Welch's t-test, which does NOT assume equal variances.
 # H0: the two group means are equal (difference = 0).
 
+
 # ---------------------------------------------#
 # Question:
 #   Do people living in the capital earn different
@@ -222,8 +258,11 @@ lower_99_t; mean_income; upper_99_t
 #
 # Hypotheses: Should our test be one or two-sided?
 # Write H0 and HA here:
-# H0: 
-# HA:
+# ANSWER: two-sided (the question says "different")
+# H0: People living in the capital do not earn a different income than the rest
+#     (difference in means = 0)
+# HA: People living in the capital earn a different income than the rest
+#     (difference in means != 0)
 
 # First, a quick descriptive check: the group means.
 # We need to select the income of only one group at a time, which is
@@ -233,30 +272,29 @@ df$cap == 0              # logical test: TRUE/FALSE for each row
 df[df$cap == 0, ]        # keep only the rows where the test is TRUE (non-capital)
 df[df$cap == 0, ]$income # select the income column of those rows
 
-
 # EXERCISE: Calculate the mean income of each group.
 # Non-capital:
-
+mean(df[df$cap == 0, ]$income)
 # Capital:
-
+mean(df[df$cap == 1, ]$income)
+# ANSWER: 1545 (non-capital) vs 2210 (capital)
 
 # EXERCISE: Conduct a two-sample t-test (Welch), two-sided.
-
-
+t.test(df$income ~ df$cap, alternative = "two.sided")
 
 # Conclusion? What does the CI tell us about the direction of the difference?
-
+# ANSWER: p = 0.029 < 0.05 -> reject H0. The CI for (group 0 - group 1) is
+# entirely negative (about -1254 to -76), so non-capital incomes are lower.
 
 # EXERCISE: On average, do people earn more in the capital
 # compared to people who do not reside in the capital?
 # Conduct the one-sided test.
-
+t.test(df$income ~ df$cap, alternative = "less")
 
 # Interpretation:
 # - If p-value < 0.05 : reject H0 (the means differ significantly)
 # - In the one-sided case, a small p-value supports the specific direction
 #   stated in HA, but says nothing about the opposite direction.
-
 
 # -----------------------------------------------------------#
 ### Extra activity with real-world data (difference in means):
@@ -289,14 +327,15 @@ east <- data$fh_polity2[data$region == "Eastern Europe"]
 
 # Check first whether there are any missing values:
 sum(is.na(west)); sum(is.na(east))
+# ANSWER: none here, but na.rm = TRUE is a safe habit.
 
 # EXERCISE: Compute the mean, n and SD for each group.
-mean_west <- 
-mean_east <- 
-n_west    <- 
-n_east    <- 
-sd_west   <- 
-sd_east   <- 
+mean_west <- mean(west, na.rm = TRUE)
+mean_east <- mean(east, na.rm = TRUE)
+n_west    <- sum(!is.na(west))
+n_east    <- sum(!is.na(east))
+sd_west   <- sd(west, na.rm = TRUE)
+sd_east   <- sd(east, na.rm = TRUE)
 
 mean_west; mean_east
 n_west; n_east
@@ -304,9 +343,9 @@ sd_west; sd_east
 
 # EXERCISE: Calculate the SEs
 # SE = sample SD / sqrt(n)
-se_west <- 
-se_east <-
-  
+se_west <- sd_west / sqrt(n_west)
+se_east <- sd_east / sqrt(n_east)
+
 se_west; se_east
 
 # -------------------------------------#
@@ -319,11 +358,11 @@ se_west; se_east
 #   95% CI = Diff ± 1.96 * SE_diff
 
 # EXERCISE: Compute the CI by hand using the formulas above.
-diff_hat <- 
-se_diff  <- 
+diff_hat <- mean_west - mean_east
+se_diff  <- sqrt((sd_west^2 / n_west) + (sd_east^2 / n_east))
 
-ci_low_analytic <- 
-ci_up_analytic  <- 
+ci_low_analytic <- diff_hat - 1.96 * se_diff
+ci_up_analytic  <- diff_hat + 1.96 * se_diff
 ci_analytic     <- c(ci_low_analytic, ci_up_analytic)
 
 diff_hat
@@ -339,13 +378,20 @@ ci_analytic
 # e.g. res$conf.int, res$p.value, res$statistic.
 
 # EXERCISE: Conduct a two-sided diff-in-means test and store it in t_test_res.
-t_test_res <- 
+t_test_res <- t.test(west, east)  # two-sided Welch test by default
 t_test_res
 
 # EXERCISE: Extract the CI from the stored test.
-ci_t <- 
+ci_t <- t_test_res$conf.int[1:2]
 ci_t
 
 # Does it match your by-hand CI? Why is it slightly different?
 
+# ANSWER: The t-based CI (about 2.10 to 4.66) is slightly wider than the
+# normal-approximation one, because the t critical value (df ~ 25) is a bit
+# larger than 1.96.
+
 # Conclusion?
+# ANSWER: p < 0.001 -> reject H0. Western Europe & North America have
+# significantly higher Polity scores (about 3.4 points, mean 9.97 vs 6.59)
+# than Eastern Europe. The CI excludes 0.
