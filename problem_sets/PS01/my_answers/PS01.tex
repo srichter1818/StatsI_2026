@@ -62,7 +62,7 @@
 
 \title{Problem Set 1}
 \date{Due: October 8, 2026}
-\author{Applied Stats/Quant Methods 1}
+\author{Samantha Richter, Applied Stats/Quant Methods 1}
 
 \begin{document}
 	\maketitle
@@ -80,33 +80,32 @@
 A school counselor was curious about the average of IQ of the students in her school and took a random sample of 25 students' IQ scores. The following is the data set:\\
 \vspace{.5cm}
 
-\lstinputlisting[language=R, firstline=36, lastline=36]{PS01.R}  
-
+\lstinputlisting[language=R, firstline=39, lastline=39]{PS01.R}  
 
 \vspace{1cm}
 
 \begin{enumerate}
 	\item Find a 90\% confidence interval for the average student IQ in the school (As a hint, you first need the mean and SD to create a CI):\\
 	
-	\lstinputlisting[language=R, firstline=37, lastline=71]{PS01.R}  
+	\lstinputlisting[language=R, firstline=40, lastline=80]{PS01.R}  
 	
-	The sample mean is 98.44, the sample standard deviation is 13.09, and the sample size is 25. Because the population standard deviation is unknown, I use the t-distribution with df=n-1=24.
+	\noindent The sample mean is 98.44, the sample standard deviation is 13.09, and the sample size is 25. The confidence interval is calculated as the sample mean $\pm$ the critical value $\times$ the standard error. Because the population standard deviation is unknown and has to be estimated from the sample (and the sample is small), I use the t-distribution with df=n-1=24 instead of the normal distribution. The t-distribution has thicker tails, so it gives a slightly wider interval, which accounts for the extra uncertainty from estimating the SD.
 	
-	For a 90\% confidence interval, alpha=0.10, so the t value is 1.71. The standard error is 2.619, and the margin of error is 4.48. Therefore, the confidence interval is 93.96 to 102.92.
+	\noindent For a 90\% confidence interval, alpha=0.10, so I leave 5\% in each tail and the t value is 1.71. The standard error is 2.619 (13.09/$\sqrt{25}$), and the margin of error is 1.71 $\times$ 2.619 = 4.48. Therefore, the confidence interval is 98.44 $\pm$ 4.48, or 93.96 to 102.92. Using the t.test() function gives the same interval.
 	
-	So, I am 90\% confident that the mean IQ of students at this school lies between 93.96 and 102.92.
-	
+	\noindent So, I am 90\% confident that the mean IQ of students at this school lies between 93.96 and 102.92. This means that if we took many random samples of 25 students and built an interval this way each time, about 90\% of those intervals would contain the true mean IQ.
 	
 	\item Next, the school counselor was curious  whether  the average student IQ in her school is higher than the average IQ score (100) among all the schools in the country.\\ 
 	
 	\noindent Using the same sample, conduct the appropriate hypothesis test with $\alpha=0.05$.
 	
-	\lstinputlisting[language=R, firstline=73, lastline=84]{PS01.R}  
+	\lstinputlisting[language=R, firstline=82, lastline=101]{PS01.R}  
 	
-	The null hypothesis is that average student IQ in her school = 100, and alternative hypothesis is that it's greater than 100. This is a one-sided t-test. The test statistic is taken by comparing the sample mean to 100 and then dividing by standard error to get -0.596. Then using 24 degrees of freedom, the one-sided p-value is 0.722. 
+	\noindent This is a one-sided t-test because the counselor wants to know whether the average student IQ in her school is \textit{higher} than 100, which is a specific direction, not just whether it is different from 100. The null hypothesis is that average student IQ in her school = 100 ($H_0: \mu = 100$), and the alternative hypothesis is that it's greater than 100 ($H_A: \mu > 100$). I use a t-test for the same reason as above: the population SD is unknown and estimated from the sample.
 	
-	Since p=0.722 is greater than alpha=0.05, I fail to reject the null hypothesis. There is insufficient evidence at the 5\% significance level to conclude that the mean IQ of students
-	at this school is greater than 100.
+	\noindent The test statistic is taken by comparing the sample mean to 100 and then dividing by standard error: (98.44 - 100)/2.619 = -0.596. Because $H_A$ is $\mu > 100$, the p-value is the area in the upper tail of the t-distribution (when lower.tail = FALSE). Using 24 degrees of freedom, the one-sided p-value is 0.722. 
+	
+	\noindent Since p=0.722 is greater than alpha=0.05, I fail to reject the null hypothesis. There is insufficient evidence at the 5\% significance level to conclude that the mean IQ of students at this school is greater than 100. In addition, the sample mean (98.44) is below 100, so the sample doesn't point in the direction of the alternative hypothesis at all.
 	
 \end{enumerate}
 
@@ -130,38 +129,61 @@ A school counselor was curious about the average of IQ of the students in her sc
 \vspace{.5cm}
 \noindent Explore the \texttt{expenditure} data set and import data into \texttt{R}.
 \vspace{.5cm}
-\lstinputlisting[language=R, firstline=88, lastline=88]{PS01.R}  
+
+\lstinputlisting[language=R, firstline=106, lastline=106]{PS01.R}  
 \vspace{.5cm}
-\lstinputlisting[language=R, firstline=90, lastline=93]{PS01.R} 
+\lstinputlisting[language=R, firstline=108, lastline=111]{PS01.R} 
 \begin{itemize}
 
 \item
 Please plot the relationships among \emph{Y}, \emph{X1}, \emph{X2}, and \emph{X3}? What are the correlations among them (you just need to describe the graph and the relationships among them)?
 \vspace{.5cm}
-\lstinputlisting[language=R, firstline=95, lastline=101]{PS01.R}  
-\includegraphics[width=0.8\textwidth]{graph_1.png}
 
-The scatterplots show positive relationships between all four variables. Y (per capita expenditure on housing assistance) has moderate positive relationships with X1 (per capita personal income) (0.532), X2 (the number of financially insecure residents per 100,000) (0.448), and X3 (the number of people per 1,000 in urban areas) (0.464). This means that higher values of each of these variables generally correspond with higher housing expenditures, although there is substantial variation. The strongest relationship is between X1 and X3, with a correlation of 0.595, suggesting that states with higher per capita personal income also tend to have a larger share of their population living in urban areas. The relationships between X1 and X2 (0.206) and between X2 and X3 (0.221) are comparatively weak. Overall, all of the relationships are positive, but none are especially strong, and the graphs show considerable spread around these general patterns.
+\lstinputlisting[language=R, firstline=113, lastline=128]{PS01.R}  
+\begin{figure}[H]\centering
+	\caption{\footnotesize Scatterplot matrix of Y, X1, X2, and X3.}
+	\label{fig:plot_1}
+	\includegraphics[width=.75\textwidth]{graph_1.png}
+\end{figure}
+
+\noindent The scatterplot matrix in plot 1 shows positive relationships between all four variables, and the correlations calculated with \texttt{cor()} confirm this. Y (per capita expenditure on housing assistance) has moderate positive relationships with X1 (per capita personal income) (0.532), X2 (the number of financially insecure residents per 100,000) (0.448), and X3 (the number of people per 1,000 in urban areas) (0.464). This means that higher values of each of these variables generally correspond with higher housing expenditures, although there is substantial variation. The strongest relationship is between X1 and X3, with a correlation of 0.595, suggesting that states with higher per capita personal income also tend to have a larger share of their population living in urban areas. The relationships between X1 and X2 (0.206) and between X2 and X3 (0.221) are comparatively weak. Overall, all of the relationships are positive, but none are especially strong, and the graphs show considerable spread around these general patterns.
 
 \item
 Please plot the relationship between \emph{Y} and \emph{Region}? On average, which region has the highest per capita expenditure on housing assistance?
 \vspace{.5cm}
-\lstinputlisting[language=R, firstline=105, lastline=135]{PS01.R}
-\includegraphics[width=0.8\textwidth]{graph_y_region.png}
 
-The boxplot shows differences in housing assistance expenditure across the four regions, although there is also variation within each region. The South generally has lower expenditures, while the West and North Central regions tend to have higher expenditures.
+\lstinputlisting[language=R, firstline=130, lastline=162]{PS01.R}
+\begin{figure}[H]\centering
+	\caption{\footnotesize Boxplot of Y by Region (red dots show the mean of each region).}
+	\label{fig:plot_2}
+	\includegraphics[width=.75\textwidth]{graph_y_region.png}
+\end{figure}
 
- The mean per capita expenditure on housing assistance is approximately 79.4 in the Northeast, 83.9 in North Central, 69.2 in the South, and 88.3 in the West. Therefore, the West has the highest average per capita expenditure on housing assistance, with a mean of approximately 88.3.
+\noindent I use a boxplot because Y is numeric and Region is categorical. Plot 2 shows differences in housing assistance expenditure across the four regions, although there is also variation within each region. The South generally has lower expenditures, while the West and North Central regions tend to have higher expenditures. The West also has the widest spread, while North Central's values are tightly clustered, with two high outliers.
+
+\noindent Since the boxplot shows the median of each region rather than the mean, I also calculated the mean for each region and added it to the boxplot as a red dot. The mean per capita expenditure on housing assistance is approximately 79.4 in the Northeast, 83.9 in North Central, 69.2 in the South, and 88.3 in the West. Therefore, the West has the highest average per capita expenditure on housing assistance, with a mean of approximately 88.3. The Northeast's median is noticeably lower than its mean, which may suggest that a few states with high expenditure are pulling its average up.
  
 \item
 Please plot the relationship between \emph{Y} and \emph{X1}? Describe this graph and the relationship. Reproduce the above graph including one more variable \emph{Region} and display different regions with different types of symbols and colors.
-\lstinputlisting[language=R, firstline=137, lastline=148]{PS01.R}
-\includegraphics[width=0.8\textwidth]{graph_y_X1.png}
 
-The scatterplot shows a moderate positive relationship between per capita personal income (X1) and per capita expenditure on housing assistance (Y). States with higher personal income generally tend to have higher housing assistance expenditures, although the points are fairly spread out, so the relationship is not especially strong.
-\lstinputlisting[language=R, firstline=152, lastline=163]{PS01.R}
-\includegraphics[width=0.8\textwidth]{graph_y_X1_region.png}
+\lstinputlisting[language=R, firstline=164, lastline=175]{PS01.R}
+\begin{figure}[H]\centering
+	\caption{\footnotesize Scatterplot of Y and X1.}
+	\label{fig:plot_3}
+	\includegraphics[width=.75\textwidth]{graph_y_X1.png}
+\end{figure}
+
+\noindent I use a scatterplot because both variables are numeric. Plot 3 shows a moderate positive relationship between per capita personal income (X1) and per capita expenditure on housing assistance (Y), with a correlation of 0.532. States with higher personal income generally tend to have higher housing assistance expenditures, although the points are fairly spread out, so the relationship is not especially strong.
+
+\lstinputlisting[language=R, firstline=177, lastline=200]{PS01.R}
+\begin{figure}[H]\centering
+	\caption{\footnotesize Scatterplot of Y and X1, with regions shown by different colors and symbols.}
+	\label{fig:plot_4}
+	\includegraphics[width=.75\textwidth]{graph_y_X1_region.png}
+\end{figure}
+
+\noindent Plot 4 reproduces the same scatterplot, with each region displayed using a different color and symbol. The South's states cluster at low income and low spending, and show the clearest positive trend. North Central's states are in the middle on both. The Northeast mostly has higher incomes, but its spending varies a lot. The West is the most spread out, with spending from about 42 to 129 at similar income levels. This suggests the relationship between X1 and Y looks different depending on the region.
+
 \end{itemize}
-
 
 \end{document}

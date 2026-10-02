@@ -26,8 +26,11 @@ pkgTest <- function(pkg){
 # here is where you load any necessary packages
 # ex: stringr
 # lapply(c("stringr"),  pkgTest)
-install.packages("tidyverse")
-lapply(c("tidyverse", "GGally"),  pkgTest)
+lapply(c("tidyverse"),  pkgTest)
+
+#set wd to current folder
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd() #checking path
 
 #####################
 # Problem 1
@@ -35,28 +38,33 @@ lapply(c("tidyverse", "GGally"),  pkgTest)
 
 y <- c(105, 69, 86, 100, 82, 111, 104, 110, 87, 108, 87, 90, 94, 113, 112, 98, 80, 97, 95, 111, 114, 89, 95, 126, 98)
 #Q1, 1. Construct a 90% confidence interval for the mean IQ.
+# CI = sample mean +/- critical value * SE
+
 #step 1: For CI, must calculate the sample mean of IQs
 y_samp_mean <- mean(y)
 y_samp_mean #sample mean is 98.44
 
-#step 2: then find the sd from the sample mean
+#step 2: then find the sample sd using the sample mean
 y_sd <- sd(y)
 y_sd #sd of y is 13.09287
 
 #step 3: get n (sample size of students)
 n <- length(y)
-n #n = 25
+n #n = 25 -> a small sample 
 
-#step 4: find standard error
+#step 4: find standard error (estimates the SD of the sampling distribution)
 y_se <- y_sd / sqrt(n)
 y_se #standard error = 2.618575
 
-#step 5: find the t-value to use in CI
+#step 5: find the critical t-value 
+# population SD is unknown (we estimate it from the sample) and n is small,
+# so using the t distribution with df = n - 1 = 24
+# for a 90% CI I leave 5% in each tail, so need the value at p = 0.95
 alpha <- 0.10
 t_val <- qt(1 - alpha/2, df = n-1)
 t_val #t value = 1.710882
 
-#step 6: use t-val to find margin of error with se
+#step 6: margin of error = critical t value * SE
 margin_error <- t_val * y_se
 margin_error #margin_error = 4.480072
 
@@ -67,104 +75,126 @@ lower_end_CI #lower end CI is 93.95993
 upper_end_CI #upper end CI is 102.9201
 #CI is [93.96, 102.92]
 
-#alternative route - I've discovered t.test
+#check with the built-in function
 t.test(y, conf.level = 0.90)
+# ANSWER: 90% CI = [93.96, 102.92], same as by hand
 
 #Q1, 2. Test if school's mean IQ is greater than 100 (alpha=0.05)
-# One-sided t-test to find p val to test H(a) that school's mean > 100
+# Hypotheses: one-sided, because the counselor asks whether the mean is
+# higher than 100 (a specific direction), not just "different" from 100
+# H0: average student IQ in the school is 100 (mu = 100)
+# HA: average student IQ in the school is greater than 100 (mu > 100)
 
-#step 1: use the t statistic formula 
+#step 1: use the t statistic = (sample mean - hypothesized mean) / SE
 t_stat <- (y_samp_mean - 100) / y_se
 t_stat #t_stat = -0.5957439
 
-#step 2: find the p-val without lower end (>100)
+#step 2: find the p-val from the upper tail, since HA is mu > 100
+# lower.tail = FALSE gives the probability of a t value at least this large
 p_val <- pt(t_stat, df = n-1, lower.tail = FALSE)
 p_val # p_val = 0.7215383
 
-#answer: since p value 0.722 is greater than 0.05, fail to reject the null
+#check with the built-in function
+t.test(y, mu = 100, alternative = "greater")
+
+# ANSWER: p = 0.722 > 0.05 -> fail to reject H0. Not enough evidence that the
+# school's mean IQ is greater than 100 (& the sample mean, 98.44, is below 100).
+
 #####################
 # Problem 2
 #####################
 expenditure <- read.table("https://raw.githubusercontent.com/ASDS-TCD/StatsI_2026/main/datasets/expenditure.txt", header=T)
 
 #explore data
-View(expenditure)
+head(expenditure)
 summary(expenditure)
 str(expenditure)
 
 #Q2, 1. Plot relationships among vars. What are the correlations?
 #step 1: subset the dataset to only look at the variables I want
-graph_1 <- expenditure |> 
-  select(Y, X1, X2, X3) |>  #step 2: make scatterplot
-  ggpairs()
+# plot() on a df of numeric columns makes a scatterplot matrix
 
-graph_1
+png("graph_1.png", width = 700, height = 700)
+expenditure %>% 
+  select(Y, X1, X2, X3) %>% 
+  plot()
+dev.off()
 
-#The scatterplots show positive relationships between all four variables. Y (per capita expenditure on housing assistance) has moderate positive relationships with X1 (per capita personal income) (0.532), X2 (the number of financially insecure residents per 100,000) (0.448), and X3 (the number of people per 1,000 in urban areas) (0.464). This means that higher values of each of these variables generally correspond with higher housing expenditures, although there is substantial variation. The strongest relationship is between X1 and X3, with a correlation of 0.595, suggesting that states with higher per capita personal income also tend to have a larger share of their population living in urban areas. The relationships between X1 and X2 (0.206) and between X2 and X3 (0.221) are comparatively weak. Overall, all of the relationships are positive, but none are especially strong, and the graphs show considerable spread around these general patterns.
+#step 2: calculate the correlations among them
+expenditure %>% 
+  select(Y, X1, X2, X3) %>% 
+  cor()
+# All positive. Y-X1 = 0.532, Y-X2 = 0.448, Y-X3 = 0.464,
+# X1-X2 = 0.206, X1-X3 = 0.595 (strongest), X2-X3 = 0.221
 
 #Q2, 2. Plot relationship btwn Y and region. Which region has highest p/c 
-        #expenditure on housing assistance
+#expenditure on housing assistance
 
+#step 1: make region (stored as numeric) a factor
 class(expenditure$Region)
-#step 1: make region a factor
 expenditure$Region <- factor(
   expenditure$Region,
   levels = c(1, 2, 3, 4),
   labels = c("Northeast", "North Central", "South", "West")
 )
 
-#Step 1: y is numerical, region is categorical --> use boxplot
+#step 2: y is numeric, region is categorical --> use boxplot
+png("graph_y_region.png", width = 700, height = 500)
+plot(expenditure$Region, expenditure$Y,
+     main = "Comparing housing assistance by region",
+     xlab = "Region",
+     ylab = "Per capita housing assistance")
+points(tapply(expenditure$Y, expenditure$Region, mean), col = "red", pch = 19)
+dev.off()
 
-graph_y_region <- ggplot (expenditure, aes(x = Region, y = Y)) +
-  geom_boxplot() +
-  labs(
-    x = "Region",
-    y = "Per Capita Housing Assistance",
-    title = "Comparing housing assistance by region"
-  )
+#The red dots show the mean of each region and the black lines show the median.
+#The West has the highest median and mean (about 88.3) but also the widest 
+#spread, while the South has the lowest median and mean (about 69.2). North 
+#Central's values are tightly clustered, with two high outliers. The Northeast's
+# mean (79.4) is well above its median, so a few high-spending states are 
+#pulling its average up.
 
-graph_y_region
-#It appears that the West will have the highest, but let's check mean
-
-#Step 2: calculate means by region
-expenditure |> 
-  group_by(Region) |> 
-  summarise(mean_for_each = mean(Y))
+#Step 3: confirm means by region
+expenditure %>% 
+  group_by(Region) %>% 
+  summarise(mean_y = mean(Y))
 #mean findings: NE = 79.4, NC = 83.9, S = 69.2, W = 88.3
-# On average, the West has the highest average per capita expenditure on housing 
-# assistance, with a mean of about 88.3.
+# The West has the highest average per capita expenditure on housing assistance 
 
-#Q2, 3. Plot relationship btwn Y and X1 Describe graph + relationship. Then, 
+#Q2,3. Plot relationship btwn Y and X1 Describe graph + relationship. Then, 
 #reproduce with Region and display w/ diff symbols and colors.
-#Step 1: y is numerical, X1 is numerical --> use scatterplot
-graph_y_X1 <- ggplot(expenditure, aes(x = X1, y = Y)) +
-  geom_point() +
-  labs(
-    title = "Per capita state income vs. per capita housing assistance",
-    x = "Per capita personal income in state",
-    y = "Per Capita Housing Assistance"
-  )
 
-graph_y_X1
-
-#The scatterplot shows a moderate positive relationship between per capita personal income (X1) and per capita expenditure on housing assistance (Y). States with higher personal income generally tend to have higher housing assistance expenditures, although the points are fairly spread out, so the relationship is not especially strong.
+#Step 1: y is numerical, X1 is numerical -> use scatterplot
+png("graph_y_X1.png", width = 700, height = 500)
+plot(expenditure$X1, expenditure$Y,
+     main = "Per capita state income vs. per capita housing assistance",
+     xlab = "Per capita personal income in state",
+     ylab = "Per capita housing assistance")
+dev.off()
+#The scatterplot shows a moderate positive relationship (r = 0.532), but points 
+#are spread out 
 
 #Step 2: add region with different symbols
-graph_y_X1_region <- ggplot(expenditure, 
-                            aes(x = X1, y = Y, 
-                                colour = Region, shape = Region)) +
-  geom_point() +
-  labs(
-    title = "Housing Assistance Expenditure and Personal Income by Region",
-    x = "Per capita personal income in state",
-    y = "Per Capita Housing Assistance"
-  )
 
-graph_y_X1_region
+png("graph_y_X1_region.png", width = 700, height = 500)
+plot(expenditure$X1, expenditure$Y,
+     col = as.numeric(expenditure$Region),
+     pch = as.numeric(expenditure$Region),
+     main = "Housing assistance and income by region",
+     xlab = "Per capita personal income in state",
+     ylab = "Per capita housing assistance")
+legend("topleft",
+       legend = levels(expenditure$Region),
+       col = 1:4,
+       pch = 1:4)
+dev.off()
+#as.numeric() turns the 4 regions into 1-4, which plot() uses as the color and
+#symbol (pch) codes, so each region gets its own color and symbol
+#legend() added because plot() doesn't make one automatically
 
-#saving all graphs
-ggsave("graph_1.png", graph_1, width = 7, height = 7)
-ggsave("graph_y_region.png", graph_y_region, width = 7, height = 5)
-ggsave("graph_y_X1.png", graph_y_X1, width = 7, height = 5)
-ggsave("graph_y_X1_region.png", graph_y_X1_region, width = 7, height = 5)
-
+#The South's states cluster at low income and low spending, and show the
+#clearest positive trend. North Central's states are in the middle on both.
+#The Northeast mostly has higher incomes, but its spending varies a lot.
+#The West is the most spread out, with spending from about 42 to 129 at
+#similar income levels, so the relationship between X1 and Y looks
+#different depending on the region.
