@@ -57,8 +57,8 @@ y_se <- y_sd / sqrt(n)
 y_se #standard error = 2.618575
 
 #step 5: find the critical t-value 
-# population SD is unknown (we estimate it from the sample) and n is small,
-# so using the t distribution with df = n - 1 = 24
+# n is small, so sample sd is an uncertain estimate of the unknown population
+# SD -> use the t distribution (thicker tails) with df = n - 1 = 24
 # for a 90% CI I leave 5% in each tail, so need the value at p = 0.95
 alpha <- 0.10
 t_val <- qt(1 - alpha/2, df = n-1)
@@ -82,10 +82,10 @@ t.test(y, conf.level = 0.90)
 #Q1, 2. Test if school's mean IQ is greater than 100 (alpha=0.05)
 # Hypotheses: one-sided, because the counselor asks whether the mean is
 # higher than 100 (a specific direction), not just "different" from 100
-# H0: average student IQ in the school is 100 (mu = 100)
+# H0: average student IQ in the school is less than or equal to 100 (mu <= 100)
 # HA: average student IQ in the school is greater than 100 (mu > 100)
 
-#step 1: use the t statistic = (sample mean - hypothesized mean) / SE
+#step 1: t statistic = (sample mean - 100) / SE, tested at 100 (edge of H0)
 t_stat <- (y_samp_mean - 100) / y_se
 t_stat #t_stat = -0.5957439
 
