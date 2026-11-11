@@ -351,7 +351,7 @@
 	\begin{enumerate}
 		\item Run a regression where the outcome variable is the incumbent's \texttt{voteshare} and the explanatory variables are \texttt{difflog} and \texttt{presvote}.	
 		
-		\noindent This is now a multiple regression with two predictors. Adding \texttt{presvote} with a \texttt{+} means each coefficient now shows the relationship between that variable and \texttt{voteshare} while holding the other variable constant.
+		\noindent This is now a multiple regression with two predictors. Adding \texttt{presvote} with a \texttt{+} means each coefficient now shows the average change in \texttt{voteshare} associated with a one-unit change in that variable, holding everything else in the model constant.
 		
 		\lstinputlisting[language=R, firstline=169, lastline=179]{PS03.R}
 		
@@ -379,7 +379,7 @@
 		\end{center}
 	\end{table}
 		
-		\noindent Both coefficients are positive and statistically significant at the 0.001 level. The coefficient on \texttt{difflog} (around 0.036) means that, holding the presidential vote share constant, a one-unit increase in \texttt{difflog} is associated with an average increase of approximately 3.6 percentage points in the incumbent's vote share. The coefficient on \texttt{presvote} (around 0.257) means that, holding the logged spending difference constant, a 1 percentage point increase in the presidential candidate's vote share is associated with an average increase of approximately 0.26 percentage points in the incumbent's vote share.
+		\noindent Both coefficients are positive and statistically significant at the 0.001 level. The coefficient on \texttt{difflog} (around 0.036) means that, on average, a one-unit increase in the logged difference in spending is associated with an increase of approximately 3.6 percentage points in the incumbent's vote share, holding everything else constant (here, the presidential vote share). The coefficient on \texttt{presvote} (around 0.257) means that, on average, a 1 percentage point increase in the presidential candidate's vote share is associated with an increase of approximately 0.26 percentage points in the incumbent's vote share, holding everything else constant (here, the logged spending difference).
 		
 		\noindent Both coefficients are smaller than in the bivariate models. The \texttt{difflog} coefficient went from 0.042 in Question 1 to 0.036 here, and the \texttt{presvote} coefficient went from 0.388 in Question 3 to 0.257 here. This is because \texttt{difflog} and \texttt{presvote} are related to each other (as Question 2 showed), so in the bivariate models each one was partly picking up the effect of the other. Once both are in the same model, each coefficient only shows the part of the relationship that belongs to that variable. The drop is much larger for \texttt{presvote}, which means a notable amount of its relationship with \texttt{voteshare} in Question 3 was connected to spending.
 		
@@ -397,7 +397,7 @@
 			\widehat{\text{voteshare}} &= 0.449 + 0.036 \times \text{difflog} + 0.257 \times \text{presvote}
 		\end{align*}
 		
-		\noindent The model predicts that for two districts with the same presidential vote, the incumbent's vote share goes up by about 3.6 percentage points on average for every one-unit increase in \texttt{difflog}. For two districts with the same logged spending difference, the incumbent's vote share goes up by about 0.26 percentage points on average for every 1 percentage point increase in the presidential vote. 
+		\noindent The model predicts that, holding everything else constant, the incumbent's vote share goes up by about 3.6 percentage points on average for every one-unit increase in the logged difference in spending, and by about 0.26 percentage points on average for every 1 percentage point increase in the presidential vote.
 		\vspace{1cm}
 		
 		\item What is it in this output that is identical to the output in Question 4? Why do you think this is the case?
