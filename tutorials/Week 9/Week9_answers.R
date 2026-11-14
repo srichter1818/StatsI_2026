@@ -1,0 +1,207 @@
+# Remove objects
+rm(list=ls())
+
+# Detach all libraries
+detachAllPackages <- function() {
+    basic.packages <- c("package:stats", "package:graphics", "package:grDevices", "package:utils", "package:datasets", "package:methods", "package:base")
+    package.list <- search()[ifelse(unlist(gregexpr("package:", search()))==1, TRUE, FALSE)]
+    package.list <- setdiff(package.list, basic.packages)
+    if (length(package.list)>0)  for (package in package.list) detach(package,  character.only=TRUE)
+    }
+detachAllPackages()
+
+# Load libraries
+pkgTest <- function(pkg){
+    new.pkg <- pkg[!(pkg %in% installed.packages()[,  "Package"])]
+    if (length(new.pkg)) 
+        install.packages(new.pkg,  dependencies = TRUE)
+    sapply(pkg,  require,  character.only = TRUE)
+    }
+
+# Load any necessary packages
+lapply(c("stargazer", "vioplot", "arm"),  pkgTest)
+
+# Set working directory for current folder
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# Research questions: 
+# What is the relationship between education and Euroscepticism?
+
+# Subsetting data
+
+# Look at the codebook: 
+# -----------------------------------------------------------
+# Dependent Variable (DV)
+# -----------------------------------------------------------
+# euftf: European unification — should it go further or has it gone too far?
+# Scale: 0 = Unification has gone too far | 10 = Unification should go further
+
+# -----------------------------------------------------------
+# Independent Variables (IV)
+# -----------------------------------------------------------
+# edlvdie: Highest level of education (Ireland-specific)
+# eduyrs: Years of full-time education completed
+
+# -----------------------------------------------------------
+# Control Variables
+# -----------------------------------------------------------
+# Z1 - hinctnta: Household total net income (all sources)
+#       Unit: Deciles (1 = lowest income, 10 = highest income)
+#
+# Z2 - trstplt: Trust in politicians
+#       Scale: 0 = No trust at all | 10 = Complete trust
+#
+# Z3 - imwbcnt: Immigrants make the country a worse or better place to live
+#       Scale: 0 = Worse place | 10 = Better place
+
+# -----------------------------------------------------------
+# Socio-Demographic Controls
+# -----------------------------------------------------------
+# gndr: Gender (1 = Male | 2 = Female)
+# agea: Age of respondent (in years)
+# brncntr: Born in country (1 = Yes | 2 = No)
+
+# Only include Ireland and relevant variables. 
+df <- read.csv("../../datasets/ESS10.csv")
+df_IRE <- df[df$cntry=="IE", c("euftf","edlvdie","eduyrs","hinctnta","trstplt",
+                             "imwbcnt","gndr","agea","brncntr")]
+View(df_IRE)
+
+# Reverse euftf, to measure euroscepticism more intuitively
+df_IRE["euftf_re"] = 10 - df_IRE[ ,c("euftf")]
+
+# -----------------------------------------------------------
+# Categorize the education level
+# -----------------------------------------------------------
+# Create an empty variable
+df_IRE["edu_cat"] <- NA
+
+# Junior Cycle: values 1-4
+df_IRE[(df_IRE$edlvdie==1) | (df_IRE$edlvdie==2) | (df_IRE$edlvdie==3) | (df_IRE$edlvdie==4), c("edu_cat")] <- 1 
+
+# Leaving Certificate: values 5-9
+df_IRE[(df_IRE$edlvdie==5) | (df_IRE$edlvdie==6) | (df_IRE$edlvdie==7) | (df_IRE$edlvdie==8) | (df_IRE$edlvdie==9), c("edu_cat")] <- 2 
+
+# Advanced Certificate: values 10-12
+df_IRE[(df_IRE$edlvdie==10) | (df_IRE$edlvdie==11) | (df_IRE$edlvdie==12), c("edu_cat")] <- 3 
+
+# Bachelor Degree: values 13-15
+df_IRE[(df_IRE$edlvdie==13) | (df_IRE$edlvdie==14) | (df_IRE$edlvdie==15), c("edu_cat")] <- 4 
+
+# Postgraduate Degree: values 16-18
+df_IRE[(df_IRE$edlvdie==16) | (df_IRE$edlvdie==17) | (df_IRE$edlvdie==18), c("edu_cat")] <- 5 
+
+# Convert into factor variable
+df_IRE$edu_cat <- factor(df_IRE$edu_cat, 
+                       levels = c(1,2,3,4,5),
+                       labels = c("Junior Cycle",
+                                  "Leaving Certificate",
+                                  "Advanced Certificate",
+                                  "Bachelor Degree",
+                                  "Postgraduate Degree"))
+levels(df_IRE$edu_cat)
+typeof(df_IRE$edu_cat)
+
+# Record missing values
+df_IRE[(df_IRE == -67) | (df_IRE == -78) | (df_IRE == -89) | (df_IRE == 77) | (df_IRE == 88) | 
+       (df_IRE == 99) | (df_IRE == 5555) | (df_IRE == 7777) | (df_IRE == 8888) | (df_IRE == 9999)] <- NA
+
+# -----------------------------------------------------------
+# Descriptive Plots
+# -----------------------------------------------------------
+# Violin plot: European unification attitudes by education category
+vioplot(df_IRE$euftf_re ~ df_IRE$edu_cat)
+
+# Scatter plot: Relationship between education level and EU attitude
+plot(df_IRE$edlvdie, df_IRE$euftf_re)
+
+# Jittered scatter plot: Adds noise to reduce overlap of points
+plot(jitter(df_IRE$edlvdie, 2), jitter(df_IRE$euftf_re, 2))
+
+# -----------------------------------------------------------
+# Simple model: socio-demographic variables only
+# -----------------------------------------------------------
+model_base <- lm(euftf_re ~ gndr + agea + brncntr, data = df_IRE)
+summary(model_base)
+
+# -----------------------------------------------------------
+# (1) Hypothesis 1: Education and Euroscepticism
+# Expectation: Higher education --> Lower Euroscepticism
+# -----------------------------------------------------------
+
+# Continuous measure of education
+model1_cont <- lm(euftf_re ~ edlvdie, data = df_IRE)
+summary(model1_cont)
+
+# Categorical measure of education
+model1_cat <- lm(euftf_re ~ edu_cat, data = df_IRE)
+summary(model1_cat)
+
+# Change reference category and re-estimate
+plot(df_IRE$edu_cat)
+df_IRE$edu_cat <- relevel(df_IRE$edu_cat, ref = 2)
+
+model1_cat <- lm(euftf_re ~ edu_cat, data = df_IRE)
+summary(model1_cat)
+
+# -----------------------------------------------------------
+# (2) Hypothesis 2: Income and Euroscepticism
+# Expectation: Higher income --> Lower Euroscepticism
+# -----------------------------------------------------------
+model2 <- lm(euftf_re ~ hinctnta, data = df_IRE)
+summary(model2)
+
+# -----------------------------------------------------------
+# (3) Hypothesis 3: Political Trust and Euroscepticism
+# Expectation: Higher trust --> Lower Euroscepticism
+# -----------------------------------------------------------
+model3 <- lm(euftf_re ~ trstplt, data = df_IRE)
+summary(model3)
+
+# -----------------------------------------------------------
+# (4) Hypothesis 4: Immigration Attitudes and Euroscepticism
+# Expectation: More positive view of immigrants --> Lower Euroscepticism
+# -----------------------------------------------------------
+model4 <- lm(euftf_re ~ imwbcnt, data = df_IRE)
+summary(model4)
+
+# -----------------------------------------------------------
+# (5) Full Model: Stepwise inclusion of dimensions
+# -----------------------------------------------------------
+
+# Education only
+model1 <- lm(euftf_re ~ edlvdie, data = df_IRE)
+summary(model1)
+
+# Add economic dimension
+model_eco <- lm(euftf_re ~ edlvdie + hinctnta, data = df_IRE)
+summary(model_eco)
+
+# Add political dimension
+model_pol <- lm(euftf_re ~ edlvdie + hinctnta + trstplt, data = df_IRE)
+summary(model_pol)
+
+# Add cultural dimension
+model_cul <- lm(euftf_re ~ edlvdie + hinctnta + trstplt + imwbcnt, data = df_IRE)
+summary(model_cul)
+
+# Add socio-demographic controls
+model_final <- lm(euftf_re ~ edlvdie + hinctnta + trstplt + imwbcnt + gndr + agea + brncntr, data = df_IRE)
+summary(model_final)
+
+# Get Latex table
+stargazer(model1,model_eco,model_pol,model_cul,model_final)
+
+# How to visualize results?
+coefplot(model_final)
+coefplot(model1, add=TRUE, col.pts="gray")
+
+# And using the coefplot library
+coefplot::multiplot(
+  list("Model 1: Education Only" = model1,
+       "Model 2: Education & Econ" = model_eco,
+       "Model 3: Education, Econ, & Politics" = model_pol,
+       "Model 4: Education, Econ, Politics, & Culture" = model_cul, 
+       "Model 5: Final Model" = model_final),
+  intercept = FALSE
+)
