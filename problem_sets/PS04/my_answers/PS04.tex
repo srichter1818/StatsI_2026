@@ -100,14 +100,14 @@
 		Create a new variable \texttt{professional} by recoding the variable \texttt{type} so that professionals are coded as $1$, and blue and white collar workers are coded as $0$ (Hint: \texttt{ifelse}).
 		\vspace{.25cm}
 		
-		\noindent I started by loading the \texttt{car} library and the \texttt{Prestige} data, and looking at the variable \texttt{type}. It contains the type of occupation in three categories: blue collar (\texttt{bc}), professional (\texttt{prof}) and white collar (\texttt{wc}).
+		\noindent I loaded the \texttt{car} library and the \texttt{Prestige} data and examined the variable \texttt{type}. It has the type of occupation in three categories: blue collar (\texttt{bc}), professional (\texttt{prof}) and white collar (\texttt{wc}).
 		
-		\noindent I then created the \texttt{professional} variable with a nested \texttt{ifelse()}. The outer \texttt{ifelse()} tests if \texttt{type} is \texttt{prof} and gives a 1 if it is. If it is not, the inner \texttt{ifelse()} tests if \texttt{type} is \texttt{bc} or \texttt{wc} and gives a 0 if so. Occupations with a missing \texttt{type} stay \texttt{NA}, so they are not wrongly counted. Then, \texttt{as.factor()} makes \texttt{professional} a categorical (dummy) variable and not a number. 
+		\noindent I created the \texttt{professional} variable with a nested \texttt{ifelse()}. The outer \texttt{ifelse()} tests if \texttt{type} is \texttt{prof} and gives a 1 if so. If not, the inner \texttt{ifelse()} sees if \texttt{type} is \texttt{bc} or \texttt{wc} and gives a 0 if so. Occupations with a missing \texttt{type} stay \texttt{NA}, so they are not wrongly counted. Then, \texttt{as.factor()} makes \texttt{professional} a categorical (dummy) variable and not a number. 
 		
 		\lstinputlisting[language=R, firstline=33, lastline=67]{PS04.R}
 		
 		\vspace{.25cm}
-		\noindent To check if the new coding worked, I cross-tabulated the original variable \texttt{type} (rows) against the new variable \texttt{professional} (columns), and then counted how many occupations fall in each category of \texttt{professional}:
+		\noindent To check if the new coding worked, I cross-tabulated the original variable \texttt{type} (rows) against the new variable \texttt{professional} (columns), and then counted how many occupations fall in each category.
 		
 \begin{verbatim}
 	      0  1 <NA>
@@ -120,17 +120,17 @@
 	67   31    4 
 \end{verbatim}
 		
-		\noindent It worked, since all 31 professional occupations are coded 1, all 44 blue collar and 23 white collar occupations are coded 0, and the 4 missing occupations are \texttt{NA}. In total there are 67 non-professionals, 31 professionals, and 4 that are missing, which adds up to all 102 occupations in the data. 
+		\noindent It worked, since all 31 professional occupations are coded 1, all 44 blue collar and 23 white collar occupations are coded 0, and the 4 missing occupations are \texttt{NA}. In total there are 67 non-professionals, 31 professionals, and 4 that are missing, which adds up to the total 102 occupations.
 		\vspace{1cm}
 		\item [(b)]
 		Run a linear model with \texttt{prestige} as an outcome and \texttt{income}, \texttt{professional}, and the interaction of the two as predictors (Note: this is a continuous $\times$ dummy interaction.)
 		
 		\vspace{.25cm}
-		\noindent I ran a linear regression with \texttt{lm()} where \texttt{prestige} is the outcome variable. The predictors are \texttt{income} (a continuous variable, measured in dollars), \texttt{professional} (the dummy variable I created in part (a)) and the interaction between the two. In the formula, \texttt{income} and \texttt{professional} are the two main effects, and \texttt{income:professional} is the interaction term (income multiplied by the dummy). The interaction is necessary because it lets the slope of income be different for professionals and non-professionals. Without it, the model would only allow a difference in intercept.
+		\noindent I ran a linear regression with \texttt{lm()} with \texttt{prestige} as the outcome variable. The predictors are \texttt{income} (continuous variable, measured in dollars), \texttt{professional} (the dummy variable created in part (a)) and their interaction. In the formula, \texttt{income} and \texttt{professional} are the two main effects, and \texttt{income:professional} is the interaction term (income multiplied by the dummy). The interaction is necessary because it lets the slope of income vary between professionals and non-professionals. Without it, the model would only have a different intercept.
 		
 		\lstinputlisting[language=R, firstline=69, lastline=85]{PS04.R}
 		\vspace{.25cm}
-		\noindent The \texttt{texreg} package turns the model into a table that shows the estimated coefficients with standard errors in parentheses. I chose to report to five decimals because the income coefficients are very small.
+		\noindent The following table that shows the estimated coefficients with standard errors in parentheses. I reported to five decimals because the income coefficients are very small.
 		
 		\begin{table}[h!]
 			\begin{center}
@@ -158,20 +158,20 @@
 			\end{center}
 		\end{table}
 		
-		\noindent The table has four estimated terms. The intercept (21.142) is the predicted prestige score for a non-professional occupation with an income of \$0. The income coefficient (0.00317) is the slope of income for non-professionals, which is the baseline group because \texttt{professional} is 0. The professional coefficient (37.781) is the difference in predicted prestige between professionals and non-professionals when the income is \$0. The interaction coefficient ($-0.00233$) represents how much the income slope changes for professionals. It is negative, so income raises prestige more slowly for professionals than for non-professionals. 
+		\noindent The table has four estimated terms. The intercept (21.142) is the predicted prestige score for a non-professional occupation with an income of \$0. The income coefficient (0.00317) is the slope of income for non-professionals, which is the baseline group because \texttt{professional} is 0. The professional coefficient (37.781) is the difference in predicted prestige between professionals and non-professionals when the income is \$0. The interaction coefficient ($-0.00233$) shows how much the income slope changes for professionals. It is negative, so income raises prestige more slowly for professionals compared to non-professionals. 
 		
 		\vspace{.25cm}
-		\noindent All four coefficients are statistically significant. The absolute t-values range from 4.10 to 8.89, and each p-value is below 0.001. Since the interaction is statistically significant, there is evidence that the relationship between income and prestige does differ between professionals and non-professionals. The model also has a strong fit: $R^2 = 0.787$. This means that income, occupation type and their interaction together explain about 79\% of the variation in prestige scores. The F-test for the whole model is also significant ($F = 115.9$ on 3 and 94 degrees of freedom, $p < 2.2 \times 10^{-16}$), and the residual standard error is 8.012 prestige points.
+		\noindent All four coefficients are statistically significant. The absolute t-values range from 4.10 to 8.89, and each p-value is below 0.001. Since the interaction is statistically significant, there is evidence that the relationship between income and prestige does differ between professionals and non-professionals. The model also has a strong fit: $R^2 = 0.787$. This means that income, occupation type and their interaction together explain about 79\% of the variation in prestige scores. The F-test for the whole model is significant ($F = 115.9$ on 3 and 94 degrees of freedom, $p < 2.2 \times 10^{-16}$), and the residual standard error is 8.012 prestige points.
 		
 		\vspace{.25cm}
-		\noindent The 4 occupations with a missing \texttt{type} were dropped, so the model uses 98 out of the 102 occupations. This also leaves 94 degrees of freedom (98 observations minus 4 estimated coefficients). In the \texttt{R} output, the dummy coefficients are named \texttt{professional1} and \texttt{income:professional1}. They show the difference for professionals compared with the baseline category 0 (blue and white collar workers).  
+		\noindent The 4 NA occupations were dropped, so the model uses 98 occupations, leaving 94 degrees of freedom. In the \texttt{R} output, the dummy coefficients are named \texttt{professional1} and \texttt{income:professional1}. They show the difference for professionals compared with the baseline category 0 (blue and white collar workers).  
 		\vspace{.5cm}
 		
 		\item [(c)]
 		Write the prediction equation based on the result.
 		\vspace{.25cm}
 		
-		\noindent The prediction equation is the fitted model written out with the estimated coefficients from \texttt{coef(model1)} rounded to five decimals.
+		\noindent The prediction equation uses the estimated coefficients from \texttt{coef(model1)} rounded to five decimals.
 		
 		\lstinputlisting[language=R, firstline=87, lastline=89]{PS04.R}
 		
@@ -187,20 +187,20 @@
 			& \quad - 0.00233 \times \text{Income} \times \text{Professional}
 		\end{align*}
 		
-		\noindent Since \texttt{professional} is a dummy variable, the equation essentially describes two lines: one for each type of occupation. For non-professionals (\texttt{professional} $= 0$), the last two terms are deleted. For professionals (\texttt{professional} $= 1$), the intercept becomes $21.14226 + 37.78128 = 58.92354$ and the income slope becomes the sum of the two income terms. Using the unrounded coefficients, this is $0.0031709 - 0.0023257 = 0.0008452$, which is about 0.00085:
+		\noindent Since \texttt{professional} is a dummy variable, the equation essentially describes one lean for each occupation type. For non-professionals (\texttt{professional} $= 0$), the last two terms are deleted. For professionals (\texttt{professional} $= 1$), the intercept becomes $21.14226 + 37.78128 = 58.92354$ and the income slope becomes the sum of the two income terms. Using the unrounded coefficients, this is $0.0031709 - 0.0023257 = 0.0008452$, which is about 0.00085:
 		\begin{align*}
 			\widehat{\text{Prestige}}_{\text{Professional}=0} &= 21.14226 + 0.00317 \times \text{Income} \\
 			\widehat{\text{Prestige}}_{\text{Professional}=1} &= 58.92354 + 0.00085 \times \text{Income}
 		\end{align*}
 		
-		\noindent The professional line starts higher because its intercept is larger, but it is flatter (a smaller slope). 
+		\noindent The professional line starts higher because its intercept is larger, but it is less steep (a smaller slope). 
 	
 		\newpage
 		\item [(d)]
 		Interpret the coefficient for \texttt{income}.
 		\vspace{.25cm}
 		
-		\noindent The coefficient for \texttt{income} is 0.00317. There is a positive and statistically significant relationship between income and prestige for non-professional occupations. Holding everything else constant (holding \texttt{professional} at 0), a one dollar increase in income is associated with an average increase of 0.00317 points in the prestige score. One dollar is a very small change, so it is easier to think about a \$1,000 increase. Holding everything else constant, a \$1,000 increase in income is associated with an average increase of about 3.17 points in prestige for non-professional occupations ($1000 \times 0.0031709 \approx 3.17$).
+		\noindent The coefficient for \texttt{income} is 0.00317. There is a positive and statistically significant relationship between income and prestige for non-professional occupations. Holding everything else constant (holding \texttt{professional} at 0), a one dollar increase in income is associated with an average increase of 0.00317 points in the prestige score. 
 		
 		\vspace{.25cm}
 		\noindent The model includes an interaction between \texttt{income} and \texttt{professional}, so the coefficient for \texttt{income} is not the effect of income for everyone. It is calculated holding \texttt{professional} at 0, so it only describes blue and white collar occupations (the baseline group). Holding \texttt{professional} at 0 also keeps the interaction term at 0, so income is the only thing that changes. For professionals the slope of income is different, because the interaction term adds $-0.00233$ to it. This means that, holding everything else constant, a one dollar increase in income is associated with a different average change in prestige for professionals. I calculate this in (f).
@@ -212,7 +212,7 @@
 		Interpret the coefficient for \texttt{professional}.
 		\vspace{.25cm}
 		
-		\noindent The coefficient for \texttt{professional} is 37.78128. Holding everything else constant (holding income at \$0), professional occupations are associated with an average prestige score that is 37.78 points higher than non-professional (blue and white collar) occupations. Holding income at \$0 also keeps the interaction term at 0, so occupation type is the only thing changing. At other income levels the difference changes, because the interaction term adds $-0.00233$ for each extra dollar of income. The gap at a given income is $37.78128 - 0.00233 \times \text{Income}$, so it gets smaller as the income rises.
+		\noindent The coefficient for \texttt{professional} is 37.78128. Holding everything else constant (holding income at \$0), professional occupations are associated with an average prestige score that is 37.78 points higher than non-professional (blue and white collar) occupations. Holding income at \$0 also keeps the interaction term at 0, so occupation type is the only thing changing. At other income levels the difference changes, because the interaction term adds $-0.00233$ for each extra dollar of income. The gap at a given income is $37.78128 - 0.00233 \times \text{Income}$, so it gets smaller as income rises.
 		
 		\vspace{.25cm}
 		\noindent An income of \$0 may not be realistic, so I checked the range of income in the data:
@@ -233,7 +233,7 @@
 		What is the effect of a \$1,000 increase in income on prestige score for professional occupations? In other words, we are interested in the marginal effect of income when the variable \texttt{professional} takes the value of $1$. Calculate the change in $\hat{y}$ associated with a \$1,000 increase in income based on your answer for (c).
 		\vspace{.25cm}
 		
-		\noindent For professionals, \texttt{professional} $= 1$, so the prediction equation from part (c) becomes $\widehat{\text{Prestige}} = 58.92354 + 0.00085 \times \text{Income}$. The marginal effect of income for professionals is the income coefficient plus the interaction coefficient, $\hat{\beta_1} + \hat{\beta_3}$. To find the change in $\hat{y}$, I calculate the predicted prestige at an income of \$1,000 and at an income of \$0 (both with \texttt{professional} $= 1$) and find the difference. I used the unrounded coefficients:
+		\noindent For professionals, \texttt{professional} $= 1$, so the prediction equation from part (c) becomes $\widehat{\text{Prestige}} = 58.92354 + 0.00085 \times \text{Income}$. The marginal effect of income for professionals is the income coefficient plus the interaction coefficient, $\hat{\beta_1} + \hat{\beta_3}$. I calculate the predicted prestige at an income of \$1,000 and at an income of \$0 (both with \texttt{professional} $= 1$) and find the difference. I used the unrounded coefficients:
 		
 		\begin{align*}
 			\hat{y}_{1000} &= 21.1422589 + 0.0031709(1000) + 37.78128(1) - 0.0023257(1000)(1) \\
@@ -248,14 +248,14 @@
 		\noindent The last line returns about 0.845, which matches the above calculation.
 		\vspace{.25cm}
 	
-		\noindent Holding everything else constant, a \$1,000 increase in income is associated with an average increase of about 0.85 points in predicted prestige. This is much smaller than the 3.17 points for non-professionals in (d). The interaction coefficient is negative, so income is associated with a smaller increase in prestige for professionals than non-professionals. 
+		\noindent Holding everything else constant, a \$1,000 increase in income is associated with an average increase of about 0.85 points in predicted prestige. This is much smaller than the 3.17 points for non-professionals in (d). The interaction coefficient is negative, so the income is associated with a smaller increase in prestige for professionals than non-professionals. 
 		\vspace{.5cm}
 		
 		\item [(g)]
 		What is the effect of changing one's occupations from non-professional to professional when her income is \$6,000? We are interested in the marginal effect of professional jobs when the variable \texttt{income} takes the value of $6,000$. Calculate the change in $\hat{y}$ based on your answer for (c).
 		\vspace{.25cm}
 		
-		\noindent The marginal effect of \texttt{professional} depends on income. Income is set at \$6,000. I calculated the predicted prestige for a professional ($\texttt{professional} = 1$) and a non-professional ($\texttt{professional} = 0$) at that income and found the difference. As in part (f), I used the unrounded coefficients:
+		\noindent The marginal effect of \texttt{professional} depends on income. I calculated the predicted prestige for a professional ($\texttt{professional} = 1$) and a non-professional ($\texttt{professional} = 0$) at that income and found the difference. 
 		
 		\begin{align*}
 			\hat{y}_{\text{prof}=1} &= 21.1422589 + 0.0031709(6000) + 37.78128(1) - 0.0023257(6000)(1) \\
@@ -265,14 +265,14 @@
 			\Delta\hat{y} &= 63.99474 - 40.16766 = 23.82708
 		\end{align*}
 		
-		\noindent The income terms cancel in the difference, so the change is the professional coefficient plus the interaction coefficient times 6,000. I checked this in \texttt{R}:
+		\noindent In the difference the income terms cancel, so the change is the professional coefficient plus the interaction coefficient times 6,000. I checked this in \texttt{R}:
 		
 	\lstinputlisting[language=R, firstline=105, lastline=107]{PS04.R}
 	
-	\noindent The last line returns about 23.827, which matches the above calculation.
+	\noindent The last line gives 23.827, which matches the above calculation.
 	
 		\vspace{.05cm}
-		\noindent Holding everything else constant (holding income at \$6,000), a professional occupation is associated with an average prestige score that is about 23.83 points higher than a non-professional occupation. This is smaller than the 37.78-point gap at an income of \$0 in (e). The interaction coefficient is negative, so the gap shrinks by about 0.00233 points for every extra dollar of income, which comes to about 13.95 points for \$6,000. Unlike in (e), \$6,000 is inside the observed range of income (\$611 to \$25,879), so this is a realistic comparison and not an extrapolation.
+		\noindent Holding everything else constant (holding income at \$6,000), a professional occupation is associated with an average prestige score that is about 23.83 points higher than a non-professional occupation. This is smaller than the 37.78-point gap at an income of \$0 in (e). The interaction coefficient is negative, so the gap reduces by around 0.00233 points for every additional income dollar, which gives about 13.95 points for \$6,000.  \$6,000 is inside the observed range of income (\$611 to \$25,879), so this is a realistic comparison and not an extrapolation.
 		
 	\end{enumerate}
 	
@@ -282,8 +282,7 @@
 	\vspace{.25cm}
 	\noindent 	Researchers are interested in learning the effect of all of those yard signs on voting preferences.\footnote{Donald P. Green, Jonathan	S. Krasno, Alexander Coppock, Benjamin D. Farrer,	Brandon Lenoir, Joshua N. Zingher. 2016. ``The effects of lawn signs on vote outcomes: Results from four randomized field experiments.'' Electoral Studies 41: 143-150. } Working with a campaign in Fairfax County, Virginia, 131 precincts were randomly divided into a treatment and control group. In 30 precincts, signs were posted around the precinct that read, ``For Sale: Terry McAuliffe. Don't Sellout Virgina on November 5.'' \\
 	
-	Below is the result of a regression with two variables and a constant.  The dependent variable is the proportion of the vote that went to McAuliff's opponent Ken Cuccinelli. The first variable indicates whether a precinct was randomly assigned to have the sign against McAuliffe posted. The second variable indicates
-	a precinct that was adjacent to a precinct in the treatment group (since people in those precincts might be exposed to the signs).  \\
+	 The dependent variable of the regression below is the vote proportion that went to McAuliff's opponent. The first variable shows if a precinct was randomly assigned to have the sign against McAuliffe posted. The second variable shows an adjacent precinct to the treatment group (since people in those precincts might be exposed to the signs).  \\
 	
 	\vspace{.5cm}
 	\begin{table}[!htbp]
@@ -316,12 +315,12 @@
 		H_A&: \beta_{\text{signs}} \neq 0
 	\end{align*}
 		
-		\noindent The test statistic is the t-value: the estimate divided by its standard error. 
+		\noindent The test statistic is the t-value: estimate divided by standard error. 
 		\begin{align*}
 			t = \frac{\text{Estimate}}{\text{SE}} = \frac{0.042}{0.016} = 2.625
 		\end{align*}
 	
-		The degrees of freedom are the number of precincts minus the number of estimated parameters: $131 - 3 = 128$ (the coefficients for the two variables plus the constant). The two-sided p-value is the probability of a t-value at least this large in absolute value if the null hypothesis were true: $2 \times P(T_{128} > 2.625) = 2 \times 0.00486 = 0.00972$. 
+		Degrees of freedom are the number of precincts minus the number of estimated parameters: $131 - 3 = 128$ (the coefficients for the two variables plus the constant). The two-sided p-value is the probability of a t-value at least this large in absolute value if the null hypothesis were true: $2 \times P(T_{128} > 2.625) = 2 \times 0.00486 = 0.00972$. 
 		
 		\lstinputlisting[language=R, firstline=119, lastline=139]{PS04.R}
 		\begin{verbatim}
@@ -329,7 +328,7 @@
 			[1] 0.00972002
 			[1] 1.978671
 		\end{verbatim}
-		\noindent The above numbers are the t-value, the p-value and the critical value. Since $|t| = 2.625$ is larger than the critical value of 1.979, and the p-value of 0.0097 is smaller than 0.05, I reject the null hypothesis of no linear association (no effect) from the lawn signs on the vote share for Cuccinelli.
+		\noindent The above numbers are the t-value, the p-value and the critical value. Since $|t| = 2.625$ is larger than the critical value of 1.979, and the p-value of 0.0097 is smaller than 0.05, I can reject the null hypothesis that there is no linear association (no effect) from the lawn signs on Cuccinelli's vote share .
 		\vspace{.25cm}
 	
 		\noindent Holding everything else constant (holding constant whether a precinct is adjacent to a precinct with signs), a precinct with lawn signs is associated with an average increase of 0.042 in Cuccinelli's vote share, which is 4.2 percentage points. So the lawn signs are associated with vote share in the direction they were intended to.
@@ -350,32 +349,34 @@
 			t = \frac{\text{Estimate}}{\text{SE}} = \frac{0.042}{0.013} = 3.231
 		\end{align*}
 		
-		The degrees of freedom are the same as in part (a). The two-sided p-value is $2 \times P(T_{128} > 3.231) = 2 \times 0.000785 = 0.00157$. 
+		The degrees of freedom are the same as in part (a). 
+		
+		The two-sided p-value is $2 \times P(T_{128} > 3.231) = 2 \times 0.000785 = 0.00157$. 
 		\lstinputlisting[language=R, firstline=141, lastline=157]{PS04.R}
 	\begin{verbatim}
 		[1] 3.230769
 		[1] 0.00156946
 		[1] 1.978671
 	\end{verbatim}
-		\noindent The above values are the t-value, the p-value and the critical value. Since $|t| = 3.231$ is bigger than the critical value of 1.979, and the p-value of 0.0016 is smaller than 0.05, I can reject the null hypothesis of no linear association (no effect).
+		\noindent The values above are the t-value, the p-value and the critical value. Since $|t| = 3.231$ is bigger than the critical value of 1.979, and the p-value of 0.0016 is smaller than 0.05, I can reject the null hypothesis that there is no linear association (no effect) between being next to a precinct with signs and vote share. 
 		\vspace{.25cm}
 		
-		\noindent Holding everything else constant (holding constant whether the precinct itself was assigned lawn signs), being next to a precinct with lawn signs is associated with an average increase of 0.042 in Cuccinelli's vote share, which is 4.2 percentage points. So being next to precincts with signs is related to vote share.
+		\noindent Holding everything else constant (holding constant whether the precinct itself was assigned lawn signs), being next to a precinct with lawn signs is associated with an average increase of 0.042 in Cuccinelli's vote share, which is 4.2 percentage points. So being next to precincts with signs is associated with vote share.
 		\vspace{.25cm}
 		
-		\noindent The coefficient is exactly the same as for precincts assigned signs in part (a), but the standard error is smaller. This gives a larger t-value (3.231 compared with 2.625) and a smaller p-value (0.0016 compared with 0.0097), so the result is statistically stronger. This may be because there are many more adjacent precincts (76) than precincts assigned signs (30), which makes the estimate more precise. One thing to note is that being next to a sign precinct was not randomly assigned, so this is not a clean causal effect. 
+		\noindent The coefficient is the same as for precincts assigned signs in part (a), but the standard error is smaller. This gives a larger t-value (3.231 compared with 2.625) and a smaller p-value (0.0016 compared with 0.0097), so the result is statistically stronger. This may be because there are many more adjacent precincts (76) than precincts assigned signs (30), which can make the estimate more precise. Being next to a sign precinct was not randomly assigned, so this is not a clean causal effect. 
 		
 		\vspace{2cm}
 		\item [(c)] Interpret the coefficient for the constant term substantively.
 		\vspace{.25cm}
 		
-		\noindent The constant is 0.302. It's the predicted vote share for Cuccinelli when both variables are 0, which means a precinct that was not assigned lawn signs and is not next to a precinct with lawn signs. On average, Cuccinelli is expected to get about 30.2\% of the vote in a precinct like this. This group functions as the baseline since the two coefficients of 0.042 in (a) and (b) are measured relative to it.
+		\noindent The constant coefficient is 0.302. It's the predicted vote share for Cuccinelli when both variables are 0, which means a precinct that was not assigned lawn signs and is not next to a precinct with lawn signs. On average, Cuccinelli is expected to get about 30.2\% of the vote in a precinct like this. This group is essentially the baseline since the two coefficients of 0.042 in (a) and (b) are measured relative to it.
 		
 		\noindent The constant is also statistically significant. Its t-value is:
 		\begin{align*}
 			t = \frac{\text{Estimate}}{\text{SE}} = \frac{0.302}{0.011} = 27.45
 		\end{align*}
-		\noindent This is far greater than the critical value of 1.979 (with 128 degrees of freedom), so the p-value is below 0.001. We would never expect Cuccinelli's baseline vote share to be 0 in reality, but it shows that the constant is a precise estimate. This is not an extrapolation because at least 25 precincts were not assigned signs or next to a precinct with signs ($131 - 30 - 76 = 25$). 
+		\noindent This is much larger than the critical value of 1.979, so the p-value is below 0.001. We would never expect Cuccinelli's baseline vote share to be 0 in reality, but it shows that the constant is a precise estimate. This is not an extrapolation because at least 25 precincts were not assigned signs or next to a precinct with signs ($131 - 30 - 76 = 25$). 
 		\vspace{2cm}
 		
 		\item [(d)] Evaluate the model fit for this regression.  What does this tell us about the importance of yard signs versus other factors that are not modeled?
@@ -384,7 +385,7 @@
 		\noindent The $R^2$ of the model is 0.094, so the two variables together (being assigned lawn signs and being next to a precinct with signs) explain about 9.4\% of the variation in Cuccinelli's vote share. This is pretty small, and it means that about 90.6\% of the variation comes from factors that are not in the model. For example, these could include how Democratic or Republican a precinct already is, its demographics, or the candidates themselves. So, compared with all of these other factors, lawn signs are not very prominent for explaining why vote share differs from one precinct to another.
 		\vspace{.25cm}
 		
-		\noindent Despite this, a low $R^2$ does not mean the lawn signs don't matter. Both coefficients are statistically significant, and the 0.042 estimate for the signs is still a credible estimate of their associated effect. $R^2$ tells how much of the overall variation the model explains, not how large or how reliable an effect is. An increase of 4.2 percentage points could still matter in a close election, but most of what drives vote share is outside this model.
+		\noindent Despite this, a low $R^2$ does not mean the lawn signs don't matter in terms of theory. Both coefficients are statistically significant, and the 0.042 estimate for the signs is still a credible estimate of their associated effect. $R^2$ tells how much of the overall variation the model explains, not how large or how reliable an effect is. An increase of 4.2 percentage points could still matter in a close election, but most of what drives vote share is outside this model.
 		
 	\end{enumerate}  
 	
